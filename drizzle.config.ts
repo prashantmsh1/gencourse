@@ -4,8 +4,8 @@ import * as dotenv from 'dotenv';
 // Load environment variables from .env file
 dotenv.config();
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is missing.');
+if (!process.env.EXPO_PUBLIC_DATABASE_URL) {
+  throw new Error('EXPO_PUBLIC_DATABASE_URL environment variable is missing.');
 }
 
 export default defineConfig({
@@ -13,7 +13,7 @@ export default defineConfig({
   out: './db/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    url: process.env.EXPO_PUBLIC_DATABASE_URL,
   },
   verbose: true,
   strict: true,

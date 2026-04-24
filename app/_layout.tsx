@@ -1,6 +1,7 @@
 import { ClerkProvider, ClerkLoaded } from "@clerk/expo";
 import * as SecureStore from "expo-secure-store";
 import { Stack } from "expo-router";
+import { useUserSync } from "../hooks/useUserSync";
 import "../global.css";
 
 const tokenCache = {
@@ -36,10 +37,16 @@ if (!publishableKey) {
   );
 }
 
+function GlobalUserSync() {
+  useUserSync();
+  return null;
+}
+
 export default function RootLayout() {
   return (
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ClerkLoaded>
+        <GlobalUserSync />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
