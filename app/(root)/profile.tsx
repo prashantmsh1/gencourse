@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 
 const { width } = Dimensions.get("window");
 
-export default function Home() {
+export default function Profile() {
   const { signOut } = useAuth();
   const { user } = useUser();
 
@@ -17,29 +17,18 @@ export default function Home() {
       <View style={[styles.glow, styles.glowBottom]} />
 
       <View className="z-10 items-center justify-center px-6 w-full flex-1">
-        <View className="mb-4 bg-success-emerald/20 px-4 py-2 rounded-full">
-          <Text className="text-[11px] font-black tracking-widest text-success-emerald uppercase">
-            Phase 2 / Explorer
-          </Text>
-        </View>
-
         <Text className="text-[32px] font-black tracking-widest text-text-primary text-center mb-2">
-          HQ EVOLVED
+          PROFILE
         </Text>
         <Text className="text-base text-text-secondary font-normal text-center mb-12">
-          Welcome back, {user?.emailAddresses[0]?.emailAddress || "Nomad"}.
+          {user?.emailAddresses[0]?.emailAddress || "Nomad Profile"}
         </Text>
 
-        <View className="bg-surface-mid border border-element-rim rounded-[24px] p-6 w-full items-center mb-10" style={styles.cardShadow}>
-          <Text className="text-xl font-bold text-text-body mb-2">Sanctum Access Granted</Text>
-          <Text className="text-sm text-text-muted text-center">Your learning journey is saved and secured by Clerk.</Text>
-        </View>
-        
         <Pressable 
-          className="w-full border border-element-rim rounded-2xl py-4 items-center justify-center active:opacity-80 mt-10"
+          className="w-full border border-element-rim bg-surface-mid rounded-2xl py-4 items-center justify-center active:opacity-80 mt-10"
           onPress={() => signOut()}
         >
-          <Text className="text-text-secondary text-base font-bold tracking-wider">
+          <Text className="text-alert-amber text-base font-bold tracking-wider">
             DISCONNECT (SIGN OUT)
           </Text>
         </Pressable>
@@ -64,12 +53,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#a855f72a", // Purple glow
     bottom: "-10%",
     right: "-30%",
-  },
-  cardShadow: {
-    shadowColor: "#1e293b",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 5,
   },
 });

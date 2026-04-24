@@ -9,7 +9,7 @@ export default function SignUpScreen() {
 
   useEffect(() => {
     if (isSignedIn) {
-      router.replace('/(root)/home');
+      router.replace('/(root)/camp');
     }
   }, [isSignedIn]);
 

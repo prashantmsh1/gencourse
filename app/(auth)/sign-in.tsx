@@ -9,9 +9,9 @@ export default function SignInScreen() {
 
   useEffect(() => {
     if (isSignedIn) {
-      router.replace('/(root)/home');
+      router.replace('/(root)/camp');
     }
-  }, [isSignedIn]);
+  }, [isSignedIn,router]);
 
   return <AuthView mode="signIn" />;
 }
