@@ -1,9 +1,18 @@
 import { Pressable, Text, View, StyleSheet, Dimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useRouter, Redirect } from "expo-router";
+import { useAuth } from "@clerk/expo";
 
 const { width } = Dimensions.get("window");
 
 export default function Index() {
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+
+  if (isSignedIn) {
+    return <Redirect href="/(root)/home" />;
+  }
+
   return (
     <View className="flex-1 bg-main items-center justify-center relative overflow-hidden">
       <StatusBar style="light" />
@@ -46,14 +55,22 @@ export default function Index() {
       </View>
 
       {/* Bottom Action Area */}
-      <View className="w-full px-6 pb-12 pt-6 z-10 absolute bottom-0">
+      <View className="w-full px-6 pb-12 pt-6 z-10 absolute bottom-0 gap-4">
         <Pressable 
           className="w-full bg-primary-purple rounded-2xl py-5 items-center justify-center active:opacity-80"
           style={styles.buttonShadow}
-          onPress={() => {console.log("Start Journey Pressed")}}
+          onPress={() => router.push("/(auth)/sign-up")}
         >
           <Text className="text-white text-lg font-bold tracking-wider">
             START JOURNEY
+          </Text>
+        </Pressable>
+        <Pressable 
+          className="w-full border border-element-rim rounded-2xl py-4 items-center justify-center active:opacity-80"
+          onPress={() => router.push("/(auth)/sign-in")}
+        >
+          <Text className="text-text-secondary text-base font-bold tracking-wider">
+            ALREADY HAVE AN ACCOUNT? SIGN IN
           </Text>
         </Pressable>
       </View>
