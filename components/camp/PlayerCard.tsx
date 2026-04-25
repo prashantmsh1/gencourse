@@ -1,16 +1,23 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 
-export default function PlayerCard({ profile }: { profile?: any }) {
+export default function PlayerCard({ profile, levels }: { profile?: any, levels?: any[] }) {
     const name = profile?.name || "Nomad";
     const level = profile?.level || 1;
     const title = profile?.title || "Nomad";
     const xp = profile?.xp || 0;
     const imageUrl = profile?.image_url;
     
-    // Simple level progression calculation (e.g., 1000 XP per level)
-    const nextLevelXp = level * 1000;
-    const xpProgress = Math.min((xp / nextLevelXp) * 100, 100);
+    // Find next level data from reference table
+    const currentLevelData = levels?.find(l => l.level === level);
+    const nextLevelData = levels?.find(l => l.level === level + 1);
+    const nextLevelXp = nextLevelData?.xpRequired || (level * 1000); // Fallback
+    const currentLevelXp = currentLevelData?.xpRequired || 0;
+    
+    // XP within current level
+    const xpInLevel = xp - currentLevelXp;
+    const xpRequiredForNext = nextLevelXp - currentLevelXp;
+    const xpProgress = Math.min((xpInLevel / xpRequiredForNext) * 100, 100);
     
     return (
         <View className="mb-6 relative overflow-hidden rounded-[24px]" style={styles.cardShadow}>

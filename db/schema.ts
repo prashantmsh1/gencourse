@@ -11,4 +11,14 @@ export const users = pgTable("users", {
 	coins: integer("coins").default(0).notNull(),
 	level: integer("level").default(1).notNull(),
 	title: text("title").default("Nomad").notNull(),
+	next_level_up: integer("next_level_up").default(100).notNull(),
+});
+
+export const levels = pgTable("levels", {
+	id: serial("id").primaryKey(),
+	level: integer("level").notNull().unique(),
+	title: text("title").notNull(),
+	xpRequired: integer("xp_required").notNull(),
+	coinsRequired: integer("coins_required").default(0).notNull(),
+	icon: text("icon"),
 });

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/expo';
-import { getUserProfile } from '../services/user.service';
+import { getUserProfile, getLevels } from '../services/user.service';
 
 export function useUserProfile() {
   const { user, isLoaded } = useUser();
   const [profile, setProfile] = useState<any>(null);
+  const [levels, setLevels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async () => {
@@ -12,8 +13,12 @@ export function useUserProfile() {
     
     try {
       setLoading(true);
-      const data = await getUserProfile(user.id);
-      setProfile(data);
+      const [profileData, levelsData] = await Promise.all([
+        getUserProfile(user.id),
+        getLevels()
+      ]);
+      setProfile(profileData);
+      setLevels(levelsData);
     } catch (error) {
       console.error('Error in useUserProfile:', error);
     } finally {
@@ -29,5 +34,5 @@ export function useUserProfile() {
     }
   }, [isLoaded, user?.id]);
 
-  return { profile, loading, refresh: fetchProfile };
+  return { profile, levels, loading, refresh: fetchProfile };
 }
