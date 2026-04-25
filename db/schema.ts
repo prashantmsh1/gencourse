@@ -107,3 +107,14 @@ export const userTrophies = pgTable("user_trophies", {
 	trophyId: integer("trophy_id").notNull(),
 	earnedAt: timestamp("earned_at").defaultNow().notNull(),
 });
+
+export const subtopicProgress = pgTable("subtopic_progress", {
+	id: serial("id").primaryKey(),
+	userId: integer("user_id").notNull(),
+	subtopicId: integer("subtopic_id").notNull(),
+	courseId: integer("course_id").notNull(),
+	chapterId: integer("chapter_id").notNull(),
+	completed: integer("completed").default(0).notNull(),
+	quizPassed: integer("quiz_passed").default(0).notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useUser } from "@clerk/expo";
 import { StatusBar } from "expo-status-bar";
 import { Dimensions, StyleSheet, ScrollView, View, Text, Image, ActivityIndicator } from "react-native";
@@ -11,12 +11,20 @@ import ExploreRealms from "@/components/camp/ExploreRealms";
 import TrophyCabinet from "@/components/camp/TrophyCabinet";
 import ForgeModal from "@/components/forge/ForgeModal";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useRouter, useFocusEffect } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
 export default function Camp() {
-	const { profile, levels, activeQuest, bounties, allTrophies, userTrophies, loading, bountiesLoading, completeBounty } = useUserProfile();
+	const { profile, levels, activeQuest, bounties, allTrophies, userTrophies, loading, bountiesLoading, completeBounty, refresh } = useUserProfile();
 	const [forgeModalVisible, setForgeModalVisible] = useState(false);
+	const router = useRouter();
+
+	useFocusEffect(
+		useCallback(() => {
+			refresh();
+		}, [])
+	);
 
 	return (
 		<View className="flex-1 bg-[#0b0c15] relative overflow-hidden">
@@ -57,7 +65,11 @@ export default function Camp() {
 
 					<PlayerCard profile={profile} levels={levels} />
 					<QuestForge onPress={() => setForgeModalVisible(true)} />
-					<ActiveQuest questData={activeQuest} />
+					<ActiveQuest 
+						questData={activeQuest} 
+						onPress={() => activeQuest && router.push(`/course/${activeQuest.course.id}`)}
+						onSummon={() => setForgeModalVisible(true)}
+					/>
 					<DailyBounties bounties={bounties} onCompleteBounty={completeBounty} isLoading={bountiesLoading} />
 					<ExploreRealms />
 					<TrophyCabinet allTrophies={allTrophies} userTrophies={userTrophies} />

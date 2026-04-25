@@ -2,7 +2,13 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Play, Sparkles, Map, Plus } from 'lucide-react-native';
 
-export default function ActiveQuest({ questData }: { questData?: any }) {
+interface ActiveQuestProps {
+  questData?: any;
+  onPress?: () => void;
+  onSummon?: () => void;
+}
+
+export default function ActiveQuest({ questData, onPress, onSummon }: ActiveQuestProps) {
     if (!questData) {
         return (
             <View className="mb-8">
@@ -25,6 +31,7 @@ export default function ActiveQuest({ questData }: { questData?: any }) {
                     <View className="flex-row w-full gap-3">
                         <TouchableOpacity 
                             activeOpacity={0.8}
+                            onPress={onSummon}
                             className="bg-[#a855f7] flex-1 flex-row items-center justify-center py-[12px] rounded-[16px]"
                         >
                             <Plus color="#fff" size={18} />
@@ -79,6 +86,7 @@ export default function ActiveQuest({ questData }: { questData?: any }) {
 
                 <TouchableOpacity 
                     activeOpacity={0.8}
+                    onPress={onPress}
                     className="bg-[#a855f7] flex-row items-center justify-center py-[14px] rounded-[16px]"
                     style={styles.buttonShadow}
                 >

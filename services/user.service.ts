@@ -94,3 +94,40 @@ export async function syncUserToDatabase(clerkUser: any) {
     console.error('Error synchronizing user to database:', error);
   }
 }
+
+export async function addXpToUser(userId: number, xpToAdd: number) {
+  try {
+    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (userResult.length === 0) return null;
+
+    const user = userResult[0];
+    const newXp = user.xp + xpToAdd;
+
+    // Check for level up
+    const nextLevel = await db
+      .select()
+      .from(levels)
+      .where(lte(levels.xpRequired, newXp))
+      .orderBy(desc(levels.level))
+      .limit(1);
+
+    const updateData: any = { xp: newXp };
+
+    if (nextLevel.length > 0 && nextLevel[0].level > user.level) {
+      updateData.level = nextLevel[0].level;
+      updateData.title = nextLevel[0].title;
+      // You could also award coins here if levels table has coinsRequired/Reward
+    }
+
+    const [updatedUser] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, userId))
+      .returning();
+
+    return updatedUser;
+  } catch (error) {
+    console.error('Error adding XP to user:', error);
+    return null;
+  }
+}

@@ -1,31 +1,46 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Dimensions, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { ChevronLeft, Play, BookOpen, Clock, Award } from 'lucide-react-native';
-import { getCourseWithContent } from '@/services/course.service';
+import { getCourseWithContent, getCourseProgress } from '@/services/course.service';
+import { getUserProfile } from '@/services/user.service';
+import { useUser } from '@clerk/expo';
 import { StatusBar } from 'expo-status-bar';
+import { CheckCircle2 } from 'lucide-react-native';
+import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 export default function CourseDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useUser();
   const [course, setCourse] = useState<any>(null);
+  const [completedSubtopics, setCompletedSubtopics] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (id) {
-      fetchCourse();
-    }
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (id && user) {
+        fetchData();
+      }
+    }, [id, user])
+  );
 
-  const fetchCourse = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await getCourseWithContent(Number(id));
-      setCourse(data);
+      const profile = await getUserProfile(user!.id);
+      if (profile) {
+        const [courseData, progressData] = await Promise.all([
+          getCourseWithContent(Number(id)),
+          getCourseProgress(profile.id, Number(id))
+        ]);
+        setCourse(courseData);
+        setCompletedSubtopics(progressData.map(p => p.subtopicId));
+      }
     } catch (error) {
-      console.error("Error fetching course:", error);
+      console.error("Error fetching course data:", error);
     } finally {
       setLoading(false);
     }
@@ -128,10 +143,22 @@ export default function CourseDetail() {
                     className="flex-row items-center p-3 rounded-xl active:bg-surface-low"
                   >
                     <View className="w-8 h-8 rounded-lg bg-surface-low items-center justify-center mr-3 border border-element-rim">
-                      <BookOpen color="#94a3b8" size={16} />
+                      {completedSubtopics.includes(subtopic.id) ? (
+                        <CheckCircle2 color="#10b981" size={16} />
+                      ) : (
+                        <BookOpen color="#94a3b8" size={16} />
+                      )}
                     </View>
-                    <Text className="text-sm font-bold text-text-body flex-1">{subtopic.title}</Text>
-                    <Play color="#a855f7" size={14} fill="#a855f7" />
+                    <Text className={`text-sm font-bold flex-1 ${completedSubtopics.includes(subtopic.id) ? 'text-success-emerald' : 'text-text-body'}`}>
+                      {subtopic.title}
+                    </Text>
+                    {completedSubtopics.includes(subtopic.id) ? (
+                      <View className="bg-success-emerald/10 px-2 py-0.5 rounded-md">
+                        <Text className="text-[8px] font-black text-success-emerald uppercase">Done</Text>
+                      </View>
+                    ) : (
+                      <Play color="#a855f7" size={14} fill="#a855f7" />
+                    )}
                   </TouchableOpacity>
                 ))}
               </View>
@@ -145,8 +172,23 @@ export default function CourseDetail() {
         <TouchableOpacity 
           activeOpacity={0.9}
           onPress={() => {
-            if (course.chapters[0]?.subtopics[0]) {
-               router.push(`/(root)/course/subtopic/${course.chapters[0].subtopics[0].id}`);
+            // Find first uncompleted subtopic
+            let targetSubtopic = null;
+            for (const chapter of course.chapters) {
+              for (const subtopic of chapter.subtopics) {
+                if (!completedSubtopics.includes(subtopic.id)) {
+                  targetSubtopic = subtopic;
+                  break;
+                }
+              }
+              if (targetSubtopic) break;
+            }
+
+            // Fallback to first if all completed
+            if (!targetSubtopic) targetSubtopic = course.chapters[0].subtopics[0];
+
+            if (targetSubtopic) {
+               router.push(`/(root)/course/subtopic/${targetSubtopic.id}`);
             }
           }}
           className="bg-primary-purple py-5 rounded-2xl flex-row items-center justify-center"

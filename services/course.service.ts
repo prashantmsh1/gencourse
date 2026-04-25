@@ -1,7 +1,8 @@
 import { eq, desc, and } from 'drizzle-orm';
 import { db } from '../db';
-import { courses, enrollments, chapters, subtopics, quizzes } from '../db/schema';
+import { courses, enrollments, chapters, subtopics, quizzes, subtopicProgress, users } from '../db/schema';
 import { CourseContent } from './gemini.service';
+import { addXpToUser } from './user.service';
 
 export async function getActiveEnrollment(userId: number) {
   try {
@@ -141,5 +142,132 @@ export async function enrollInCourse(userId: number, courseId: number) {
   } catch (error) {
     console.error('Error enrolling in course:', error);
     return null;
+  }
+}
+
+export async function completeSubtopic(userId: number, subtopicId: number, quizPassed: boolean) {
+  try {
+    // 1. Get subtopic and course info
+    const subtopicData = await db
+      .select({
+        subtopic: subtopics,
+        chapter: chapters,
+        course: courses
+      })
+      .from(subtopics)
+      .innerJoin(chapters, eq(subtopics.chapterId, chapters.id))
+      .innerJoin(courses, eq(chapters.courseId, courses.id))
+      .where(eq(subtopics.id, subtopicId))
+      .limit(1);
+
+    if (subtopicData.length === 0) return null;
+    const { subtopic, chapter, course } = subtopicData[0];
+
+    // 2. Update subtopic progress
+    const existingProgress = await db
+      .select()
+      .from(subtopicProgress)
+      .where(
+        and(
+          eq(subtopicProgress.userId, userId),
+          eq(subtopicProgress.subtopicId, subtopicId)
+        )
+      )
+      .limit(1);
+
+    const isFirstTimeCompletion = existingProgress.length === 0 || existingProgress[0].completed === 0;
+
+    if (existingProgress.length > 0) {
+      await db
+        .update(subtopicProgress)
+        .set({
+          completed: 1,
+          quizPassed: quizPassed ? 1 : existingProgress[0].quizPassed,
+          updatedAt: new Date()
+        })
+        .where(eq(subtopicProgress.id, existingProgress[0].id));
+    } else {
+      await db.insert(subtopicProgress).values({
+        userId,
+        subtopicId,
+        courseId: course.id,
+        chapterId: chapter.id,
+        completed: 1,
+        quizPassed: quizPassed ? 1 : 0
+      });
+    }
+
+    // 3. Award XP if first time
+    if (isFirstTimeCompletion) {
+      let xpAward = 20; // Base subtopic XP
+      if (quizPassed) xpAward += 30; // Quiz bonus
+      await addXpToUser(userId, xpAward);
+    }
+
+    // 4. Check if chapter is complete
+    const chapterSubtopics = await db.select().from(subtopics).where(eq(subtopics.chapterId, chapter.id));
+    const completedSubtopics = await db
+      .select()
+      .from(subtopicProgress)
+      .where(
+        and(
+          eq(subtopicProgress.userId, userId),
+          eq(subtopicProgress.chapterId, chapter.id),
+          eq(subtopicProgress.completed, 1)
+        )
+      );
+
+    const isChapterComplete = completedSubtopics.length === chapterSubtopics.length;
+
+    // 5. Update enrollment
+    if (isChapterComplete) {
+       // Check if this chapter was already completed
+       const enrollment = await db
+        .select()
+        .from(enrollments)
+        .where(and(eq(enrollments.userId, userId), eq(enrollments.courseId, course.id)))
+        .limit(1);
+
+       if (enrollment.length > 0 && enrollment[0].completedChapters < chapter.chapterNumber) {
+          const isCourseComplete = chapter.chapterNumber === course.totalChapters;
+          
+          await db.update(enrollments)
+            .set({
+               completedChapters: chapter.chapterNumber,
+               currentChapter: isCourseComplete ? chapter.chapterNumber : chapter.chapterNumber + 1,
+               status: isCourseComplete ? 'completed' : 'in_progress',
+               updatedAt: new Date()
+            })
+            .where(eq(enrollments.id, enrollment[0].id));
+
+          // Chapter completion XP
+          await addXpToUser(userId, 100);
+       }
+    }
+
+    return { success: true, isChapterComplete };
+  } catch (error) {
+    console.error('Error completing subtopic:', error);
+    return null;
+  }
+}
+
+export async function getCourseProgress(userId: number, courseId: number) {
+  try {
+    const completedSubtopics = await db
+      .select()
+      .from(subtopicProgress)
+      .where(
+        and(
+          eq(subtopicProgress.userId, userId),
+          eq(subtopicProgress.courseId, courseId),
+          eq(subtopicProgress.completed, 1)
+        )
+      );
+    
+    return completedSubtopics;
+  } catch (error) {
+    console.error('Error getting course progress:', error);
+    return [];
   }
 }

@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { ChevronLeft, CheckCircle2, XCircle, ArrowRight, HelpCircle } from 'lucide-react-native';
-import { getSubtopicWithQuiz } from '@/services/course.service';
+import { getSubtopicWithQuiz, completeSubtopic } from '@/services/course.service';
+import { useUser } from '@clerk/expo';
+import { getUserProfile } from '@/services/user.service';
 import { StatusBar } from 'expo-status-bar';
 
 const { width } = Dimensions.get('window');
@@ -10,7 +12,9 @@ const { width } = Dimensions.get('window');
 export default function SubtopicDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useUser();
   const [data, setData] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
   // Quiz state
@@ -19,29 +23,40 @@ export default function SubtopicDetail() {
   const [isCorrect, setIsCorrect] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      fetchSubtopic();
+    if (id && user) {
+      fetchData();
     }
-  }, [id]);
+  }, [id, user]);
 
-  const fetchSubtopic = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const subtopicData = await getSubtopicWithQuiz(Number(id));
+      const [subtopicData, profileData] = await Promise.all([
+        getSubtopicWithQuiz(Number(id)),
+        getUserProfile(user!.id)
+      ]);
       setData(subtopicData);
+      setProfile(profileData);
     } catch (error) {
-      console.error("Error fetching subtopic:", error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleQuizSubmit = () => {
-    if (selectedOption === null) return;
+  const handleQuizSubmit = async () => {
+    if (selectedOption === null || !profile) return;
     
     const correct = selectedOption === data.quiz.correctAnswer;
     setIsCorrect(correct);
     setShowResult(true);
+
+    // Save progress to database
+    try {
+      await completeSubtopic(profile.id, Number(id), correct);
+    } catch (error) {
+      console.error("Error saving progress:", error);
+    }
   };
 
   if (loading) {
