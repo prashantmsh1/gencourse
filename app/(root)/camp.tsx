@@ -13,7 +13,7 @@ import { useUserProfile } from "../../hooks/useUserProfile";
 const { width } = Dimensions.get("window");
 
 export default function Camp() {
-	const { profile, levels, loading } = useUserProfile();
+	const { profile, levels, activeQuest, loading } = useUserProfile();
 
 	return (
 		<View className="flex-1 bg-[#0b0c15] relative overflow-hidden">
@@ -54,7 +54,7 @@ export default function Camp() {
 
 					<PlayerCard profile={profile} levels={levels} />
 					<QuestForge />
-					<ActiveQuest />
+					<ActiveQuest questData={activeQuest} />
 					<DailyBounties />
 					<ExploreRealms />
 					<TrophyCabinet />

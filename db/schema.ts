@@ -22,3 +22,25 @@ export const levels = pgTable("levels", {
 	coinsRequired: integer("coins_required").default(0).notNull(),
 	icon: text("icon"),
 });
+
+export const courses = pgTable("courses", {
+	id: serial("id").primaryKey(),
+	title: text("title").notNull(),
+	description: text("description").notNull(),
+	totalChapters: integer("total_chapters").notNull(),
+	xpReward: integer("xp_reward").notNull(),
+	coinReward: integer("coin_reward").notNull(),
+	icon: text("icon"),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const enrollments = pgTable("enrollments", {
+	id: serial("id").primaryKey(),
+	userId: integer("user_id").notNull(),
+	courseId: integer("course_id").notNull(),
+	currentChapter: integer("current_chapter").default(1).notNull(),
+	completedChapters: integer("completed_chapters").default(0).notNull(),
+	status: text("status").default("in_progress").notNull(), // 'in_progress' or 'completed'
+	enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

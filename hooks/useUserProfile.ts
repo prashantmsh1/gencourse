@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/expo';
 import { getUserProfile, getLevels } from '../services/user.service';
+import { getActiveEnrollment } from '../services/course.service';
 
 export function useUserProfile() {
   const { user, isLoaded } = useUser();
   const [profile, setProfile] = useState<any>(null);
   const [levels, setLevels] = useState<any[]>([]);
+  const [activeQuest, setActiveQuest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async () => {
@@ -13,12 +15,17 @@ export function useUserProfile() {
     
     try {
       setLoading(true);
-      const [profileData, levelsData] = await Promise.all([
-        getUserProfile(user.id),
-        getLevels()
-      ]);
-      setProfile(profileData);
-      setLevels(levelsData);
+      const profileData = await getUserProfile(user.id);
+      
+      if (profileData) {
+        const [levelsData, questData] = await Promise.all([
+          getLevels(),
+          getActiveEnrollment(profileData.id)
+        ]);
+        setProfile(profileData);
+        setLevels(levelsData);
+        setActiveQuest(questData);
+      }
     } catch (error) {
       console.error('Error in useUserProfile:', error);
     } finally {
@@ -34,5 +41,5 @@ export function useUserProfile() {
     }
   }, [isLoaded, user?.id]);
 
-  return { profile, levels, loading, refresh: fetchProfile };
+  return { profile, levels, activeQuest, loading, refresh: fetchProfile };
 }
