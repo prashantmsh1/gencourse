@@ -12,6 +12,7 @@ export const users = pgTable("users", {
 	level: integer("level").default(1).notNull(),
 	title: text("title").default("Nomad").notNull(),
 	next_level_up: integer("next_level_up").default(100).notNull(),
+	is_paid: integer("is_paid").default(0).notNull(), // 0 for false, 1 for true
 });
 
 export const levels = pgTable("levels", {
@@ -31,6 +32,39 @@ export const courses = pgTable("courses", {
 	xpReward: integer("xp_reward").notNull(),
 	coinReward: integer("coin_reward").notNull(),
 	icon: text("icon"),
+	difficulty: text("difficulty").default("medium").notNull(), // 'easy' | 'medium' | 'hard'
+	thumbnail: text("thumbnail"), // URL or base64 of AI-generated thumbnail
+	category: text("category"), // For thumbnail color-mapping
+	generatedBy: text("generated_by").default("manual").notNull(), // 'ai' | 'manual'
+	userId: integer("user_id"), // Who created this course
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const chapters = pgTable("chapters", {
+	id: serial("id").primaryKey(),
+	courseId: integer("course_id").notNull(), // FK -> courses.id
+	chapterNumber: integer("chapter_number").notNull(),
+	title: text("title").notNull(),
+	description: text("description"),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const subtopics = pgTable("subtopics", {
+	id: serial("id").primaryKey(),
+	chapterId: integer("chapter_id").notNull(), // FK -> chapters.id
+	subtopicNumber: integer("subtopic_number").notNull(),
+	title: text("title").notNull(),
+	content: text("content").notNull(), // The actual learning content (markdown)
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const quizzes = pgTable("quizzes", {
+	id: serial("id").primaryKey(),
+	subtopicId: integer("subtopic_id").notNull(), // FK -> subtopics.id
+	question: text("question").notNull(),
+	options: text("options").notNull(), // JSON stringified array of 4 options
+	correctAnswer: integer("correct_answer").notNull(), // Index (0-3) of correct option
+	explanation: text("explanation"), // Why the answer is correct
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

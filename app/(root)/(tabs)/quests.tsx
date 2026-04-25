@@ -1,13 +1,19 @@
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Dimensions, StyleSheet, Text, View, ScrollView } from "react-native";
-import QuestHeader from "../../components/quests/QuestHeader";
-import ForgeCard from "../../components/quests/ForgeCard";
-import ActiveMissions from "../../components/quests/ActiveMissions";
-import HiddenGems from "../../components/quests/HiddenGems";
+import QuestHeader from "@/components/quests/QuestHeader";
+import ForgeCard from "@/components/quests/ForgeCard";
+import ActiveMissions from "@/components/quests/ActiveMissions";
+import HiddenGems from "@/components/quests/HiddenGems";
+import ForgeModal from "@/components/forge/ForgeModal";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 const { width } = Dimensions.get("window");
 
 export default function Quests() {
+	const { profile } = useUserProfile();
+	const [forgeModalVisible, setForgeModalVisible] = useState(false);
+
 	return (
 		<View className="flex-1 bg-[#0b0c15] relative overflow-hidden">
 			<StatusBar style="light" />
@@ -22,10 +28,17 @@ export default function Quests() {
 				showsVerticalScrollIndicator={false}
 			>
 				<QuestHeader />
-				<ForgeCard />
+				<ForgeCard onPress={() => setForgeModalVisible(true)} />
 				<ActiveMissions missions={[]} />
 				<HiddenGems />
 			</ScrollView>
+
+			<ForgeModal 
+				visible={forgeModalVisible} 
+				onClose={() => setForgeModalVisible(false)} 
+				userId={profile?.id}
+				isPaid={profile?.is_paid === 1}
+			/>
 		</View>
 	);
 }

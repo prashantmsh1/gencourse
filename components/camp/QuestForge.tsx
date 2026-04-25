@@ -1,9 +1,13 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
-export default function QuestForge() {
+export default function QuestForge({ onPress }: { onPress?: () => void }) {
     return (
-        <TouchableOpacity activeOpacity={0.9} className="mb-8">
+        <TouchableOpacity 
+            activeOpacity={0.9} 
+            className="mb-8"
+            onPress={onPress}
+        >
             <View className="relative overflow-hidden rounded-[32px] border border-[#a855f7] bg-[#0f172a]" style={styles.glowShadow}>
                 <View className="absolute inset-0 bg-[#6366f1] opacity-20" />
                 <View className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[#a855f7] opacity-40" />

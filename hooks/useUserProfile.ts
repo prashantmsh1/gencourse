@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/expo';
-import { getUserProfile, getLevels } from '../services/user.service';
-import { getActiveEnrollment } from '../services/course.service';
-import { getDailyBounties, completeBounty as completeBountyService } from '../services/bounty.service';
-import { getAllTrophies, getUserTrophies } from '../services/trophy.service';
+import { getUserProfile, getLevels } from '@/services/user.service';
+import { getActiveEnrollment } from '@/services/course.service';
+import { getDailyBounties, completeBounty as completeBountyService } from '@/services/bounty.service';
+import { getAllTrophies, getUserTrophies } from '@/services/trophy.service';
 
 export function useUserProfile() {
   const { user, isLoaded } = useUser();
