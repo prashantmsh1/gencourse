@@ -11,6 +11,7 @@ export function useUserProfile() {
   const [activeQuest, setActiveQuest] = useState<any>(null);
   const [bounties, setBounties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bountiesLoading, setBountiesLoading] = useState(false);
 
   const fetchProfile = async () => {
     if (!user?.id) return;
@@ -20,20 +21,33 @@ export function useUserProfile() {
       const profileData = await getUserProfile(user.id);
       
       if (profileData) {
-        const [levelsData, questData, bountiesData] = await Promise.all([
+        const [levelsData, questData] = await Promise.all([
           getLevels(),
           getActiveEnrollment(profileData.id),
-          getDailyBounties(profileData.id)
         ]);
         setProfile(profileData);
         setLevels(levelsData);
         setActiveQuest(questData);
-        setBounties(bountiesData);
+        
+        // Start fetching bounties in background (non-blocking)
+        fetchBounties(profileData.id);
       }
     } catch (error) {
       console.error('Error in useUserProfile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBounties = async (userId: number) => {
+    try {
+      setBountiesLoading(true);
+      const bountiesData = await getDailyBounties(userId);
+      setBounties(bountiesData);
+    } catch (error) {
+      console.error('Error fetching bounties:', error);
+    } finally {
+      setBountiesLoading(false);
     }
   };
 
@@ -64,6 +78,7 @@ export function useUserProfile() {
     activeQuest, 
     bounties, 
     loading, 
+    bountiesLoading,
     refresh: fetchProfile,
     completeBounty: handleCompleteBounty
   };

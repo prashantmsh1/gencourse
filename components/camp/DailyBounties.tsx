@@ -1,8 +1,16 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { CheckCircle2, Circle, Clock } from 'lucide-react-native';
+import { CheckCircle2, Circle, Clock, Sparkles } from 'lucide-react-native';
 
-export default function DailyBounties({ bounties, onCompleteBounty }: { bounties?: any[], onCompleteBounty?: (id: number) => void }) {
+export default function DailyBounties({ 
+    bounties, 
+    onCompleteBounty,
+    isLoading 
+}: { 
+    bounties?: any[], 
+    onCompleteBounty?: (id: number) => void,
+    isLoading?: boolean
+}) {
     const getRewardIcon = (type: string) => {
         switch (type) {
             case 'xp': return require('../../assets/images/lightning.png');
@@ -13,6 +21,7 @@ export default function DailyBounties({ bounties, onCompleteBounty }: { bounties
     };
 
     const formatTimeLeft = () => {
+        if (isLoading) return "Summoning...";
         if (!bounties?.[0]?.expiresAt) return "Refreshing soon";
         const expires = new Date(bounties[0].expiresAt);
         const now = new Date();
@@ -24,6 +33,15 @@ export default function DailyBounties({ bounties, onCompleteBounty }: { bounties
         return `Refreshes in ${hours}h ${mins}m`;
     };
 
+    // Hardcoded display-only fallbacks for visual completeness
+    const fallbackBounties = [
+        { id: -1, title: 'Create a new course', description: 'Summon a quest to begin', rewardType: 'coins', rewardAmount: 50 },
+        { id: -2, title: 'Explore a new realm', description: 'Browse learning paths', rewardType: 'xp', rewardAmount: 20 },
+        { id: -3, title: 'Review your progress', description: 'Check your achievements', rewardType: 'gems', rewardAmount: 1 },
+    ];
+
+    const currentBounties = (bounties && bounties.length > 0) ? bounties : fallbackBounties;
+
     return (
         <View className="mb-8">
             <Text className="text-xl font-black text-[#f1f5f9] tracking-wider mb-4">
@@ -31,19 +49,44 @@ export default function DailyBounties({ bounties, onCompleteBounty }: { bounties
             </Text>
 
             <View className="bg-[#0f172a] rounded-[24px] border border-[#1e293b] p-4" style={styles.cardShadow}>
-                {bounties && bounties.length > 0 ? (
-                    bounties.map((bounty, index) => (
+                {isLoading ? (
+                    <View>
+                        {[1, 2, 3].map((_, i) => (
+                            <View key={i}>
+                                <View className="flex-row items-center py-3 opacity-40">
+                                    <View className="w-6 h-6 rounded-full bg-[#334155]" />
+                                    <View className="ml-3 flex-1">
+                                        <View className="h-4 w-32 bg-[#334155] rounded mb-1.5" />
+                                        <View className="h-3 w-48 bg-[#334155] rounded" />
+                                    </View>
+                                    <View className="w-16 h-7 rounded-full bg-[#334155]" />
+                                </View>
+                                {i < 2 && <View className="h-[1px] w-full bg-[#1e293b]" />}
+                            </View>
+                        ))}
+                        <View className="py-4 items-center">
+                            <View className="flex-row items-center">
+                                <Sparkles size={14} color="#a855f7" />
+                                <Text className="text-[#a855f7] font-bold text-xs ml-2 uppercase tracking-widest">
+                                    Summoning your challenges...
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                ) : (
+                    currentBounties.map((bounty, index) => (
                         <View key={bounty.id}>
                             <TouchableOpacity 
                                 activeOpacity={0.7}
                                 className="flex-row items-center justify-between py-3"
-                                onPress={() => !bounty.completed && onCompleteBounty?.(bounty.id)}
+                                onPress={() => !bounty.completed && bounty.id > 0 && onCompleteBounty?.(bounty.id)}
+                                disabled={bounty.id < 0}
                             >
                                 <View className="flex-row items-center flex-1 pr-4">
                                     {bounty.completed ? (
                                         <CheckCircle2 color="#10b981" size={24} />
                                     ) : (
-                                        <Circle color="#64748b" size={24} />
+                                        <Circle color={bounty.id < 0 ? "#334155" : "#64748b"} size={24} />
                                     )}
                                     
                                     <View className="ml-3 flex-1">
@@ -65,15 +108,11 @@ export default function DailyBounties({ bounties, onCompleteBounty }: { bounties
                             </TouchableOpacity>
                             
                             {/* Divider */}
-                            {index < bounties.length - 1 && (
+                            {index < currentBounties.length - 1 && (
                                 <View className="h-[1px] w-full bg-[#1e293b]" />
                             )}
                         </View>
                     ))
-                ) : (
-                    <View className="py-4 items-center">
-                        <Text className="text-[#94a3b8] font-medium">Summoning bounties...</Text>
-                    </View>
                 )}
 
                 {/* Footer / Refresh Timer */}

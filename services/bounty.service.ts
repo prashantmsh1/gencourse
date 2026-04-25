@@ -43,8 +43,17 @@ export async function refreshBounties(userId: number) {
       .innerJoin(courses, eq(enrollments.courseId, courses.id))
       .where(eq(enrollments.userId, userId));
 
-    // 2. Generate with Gemini
-    const newBountyTemplates = await generateBounties(userEnrollments);
+    let newBountyTemplates = [];
+    
+    // 2. Generate with Gemini only if user has courses
+    if (userEnrollments.length > 0) {
+      newBountyTemplates = await generateBounties(userEnrollments);
+    }
+    
+    // If no courses or Gemini failed/returned nothing, use fallbacks
+    if (newBountyTemplates.length === 0) {
+      newBountyTemplates = getFallbackBountyTemplates();
+    }
 
     // 3. Delete old ones
     await db.delete(dailyBounties).where(eq(dailyBounties.userId, userId));
@@ -72,6 +81,14 @@ export async function refreshBounties(userId: number) {
     console.error('Error refreshing bounties:', error);
     return [];
   }
+}
+
+function getFallbackBountyTemplates() {
+  return [
+    { title: 'Create a new course', description: 'Summon a quest to begin your journey', rewardType: 'coins', rewardAmount: 50 },
+    { title: 'Explore a new realm', description: 'Browse available learning paths', rewardType: 'xp', rewardAmount: 20 },
+    { title: 'Review your progress', description: 'Check your stats and achievements', rewardType: 'gems', rewardAmount: 1 },
+  ];
 }
 
 export async function completeBounty(userId: number, bountyId: number) {
