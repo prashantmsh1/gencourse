@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/expo';
 import { getUserProfile, getLevels } from '@/services/user.service';
-import { getActiveEnrollment } from '@/services/course.service';
+import { getActiveEnrollment, getAllActiveEnrollments } from '@/services/course.service';
 import { getDailyBounties, completeBounty as completeBountyService } from '@/services/bounty.service';
 import { getAllTrophies, getUserTrophies } from '@/services/trophy.service';
 
@@ -10,6 +10,7 @@ export function useUserProfile() {
   const [profile, setProfile] = useState<any>(null);
   const [levels, setLevels] = useState<any[]>([]);
   const [activeQuest, setActiveQuest] = useState<any>(null);
+  const [activeMissions, setActiveMissions] = useState<any[]>([]);
   const [bounties, setBounties] = useState<any[]>([]);
   const [allTrophies, setAllTrophies] = useState<any[]>([]);
   const [userTrophies, setUserTrophies] = useState<any[]>([]);
@@ -24,15 +25,17 @@ export function useUserProfile() {
       const profileData = await getUserProfile(user.id);
       
       if (profileData) {
-        const [levelsData, questData, trophiesData, userTrophiesData] = await Promise.all([
+        const [levelsData, questData, missionsData, trophiesData, userTrophiesData] = await Promise.all([
           getLevels(),
           getActiveEnrollment(profileData.id),
+          getAllActiveEnrollments(profileData.id),
           getAllTrophies(),
           getUserTrophies(profileData.id),
         ]);
         setProfile(profileData);
         setLevels(levelsData);
         setActiveQuest(questData);
+        setActiveMissions(missionsData);
         setAllTrophies(trophiesData);
         setUserTrophies(userTrophiesData);
         
@@ -83,6 +86,7 @@ export function useUserProfile() {
     profile, 
     levels, 
     activeQuest, 
+    activeMissions,
     bounties, 
     allTrophies,
     userTrophies,

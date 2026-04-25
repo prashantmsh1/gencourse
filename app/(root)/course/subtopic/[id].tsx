@@ -26,7 +26,7 @@ export default function SubtopicDetail() {
     if (id && user) {
       fetchData();
     }
-  }, [id, user]);
+  }, [id, user,]);
 
   const fetchData = async () => {
     try {

@@ -11,7 +11,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 const { width } = Dimensions.get("window");
 
 export default function Quests() {
-	const { profile } = useUserProfile();
+	const { profile, activeMissions } = useUserProfile();
 	const [forgeModalVisible, setForgeModalVisible] = useState(false);
 
 	return (
@@ -29,7 +29,7 @@ export default function Quests() {
 			>
 				<QuestHeader />
 				<ForgeCard onPress={() => setForgeModalVisible(true)} />
-				<ActiveMissions missions={[]} />
+				<ActiveMissions missions={activeMissions} />
 				<HiddenGems />
 			</ScrollView>
 

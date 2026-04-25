@@ -29,6 +29,30 @@ export async function getActiveEnrollment(userId: number) {
   }
 }
 
+export async function getAllActiveEnrollments(userId: number) {
+  try {
+    const result = await db
+      .select({
+        enrollment: enrollments,
+        course: courses,
+      })
+      .from(enrollments)
+      .innerJoin(courses, eq(enrollments.courseId, courses.id))
+      .where(
+        and(
+          eq(enrollments.userId, userId),
+          eq(enrollments.status, 'in_progress')
+        )
+      )
+      .orderBy(desc(enrollments.updatedAt));
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching all active enrollments:', error);
+    return [];
+  }
+}
+
 export async function createAICourse(userId: number, content: CourseContent, difficulty: string, thumbnailPrompt: string | null) {
   try {
     // Note: neon-http driver doesn't support db.transaction for now.
