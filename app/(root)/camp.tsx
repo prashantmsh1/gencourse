@@ -1,36 +1,65 @@
 import { useUser } from "@clerk/expo";
 import { StatusBar } from "expo-status-bar";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, ScrollView, View, Text, Image, ActivityIndicator } from "react-native";
+
+import PlayerCard from "../../components/camp/PlayerCard";
+import QuestForge from "../../components/camp/QuestForge";
+import ActiveQuest from "../../components/camp/ActiveQuest";
+import DailyBounties from "../../components/camp/DailyBounties";
+import ExploreRealms from "../../components/camp/ExploreRealms";
+import TrophyCabinet from "../../components/camp/TrophyCabinet";
+import { useUserProfile } from "../../hooks/useUserProfile";
 
 const { width } = Dimensions.get("window");
 
 export default function Camp() {
-	const { user } = useUser();
+	const { profile, loading } = useUserProfile();
 
 	return (
-		<View className="flex-1 bg-main items-center justify-center relative overflow-hidden">
+		<View className="flex-1 bg-[#0b0c15] relative overflow-hidden">
 			<StatusBar style="light" />
 
 			{/* Atmospherics (Glows) */}
 			<View style={[styles.glow, styles.glowTop]} />
 			<View style={[styles.glow, styles.glowBottom]} />
 
-			<View className="z-10 items-center justify-center px-6 w-full flex-1">
-				<Text className="text-base text-text-secondary font-normal text-center mb-12">
-					Welcome back, {user?.emailAddresses[0]?.emailAddress || "Nomad"}.
-				</Text>
-
-				<View
-					className="bg-surface-mid border border-element-rim rounded-[24px] p-6 w-full items-center mb-10"
-					style={styles.cardShadow}>
-					<Text className="text-xl font-bold text-text-body mb-2">
-						Sanctum Access Granted
-					</Text>
-					<Text className="text-sm text-text-muted text-center">
-						Your learning journey is saved and secured by Clerk.
-					</Text>
+			{loading && !profile ? (
+				<View className="flex-1 items-center justify-center z-20">
+					<ActivityIndicator size="large" color="#a855f7" />
 				</View>
-			</View>
+			) : (
+				<ScrollView 
+					className="flex-1 z-10" 
+					contentContainerStyle={{ padding: 24, paddingBottom: 100, paddingTop: 60 }}
+					showsVerticalScrollIndicator={false}
+				>
+					{/* Top Header */}
+					<View className="flex-row justify-between items-center mb-8">
+						<View>
+							<Text className="text-[28px] font-black text-white tracking-tight">The Camp</Text>
+							<Text className="text-sm text-[#94a3b8] font-medium">Safe Haven</Text>
+						</View>
+						
+						<View className="flex-row items-center bg-[#111827] border border-[#1e293b] px-3 py-2 rounded-2xl">
+							<View className="flex-row items-center mr-4">
+								<Image source={require("../../assets/images/coin.png")} className="w-5 h-5 mr-1.5" />
+								<Text className="text-white font-black text-sm">{profile?.coins?.toLocaleString() || 0}</Text>
+							</View>
+							<View className="flex-row items-center">
+								<Image source={require("../../assets/images/lightning.png")} className="w-5 h-5 mr-1.5" />
+								<Text className="text-[#38bdf8] font-black text-sm">{profile?.xp?.toLocaleString() || 0} XP</Text>
+							</View>
+						</View>
+					</View>
+
+					<PlayerCard profile={profile} />
+					<QuestForge />
+					<ActiveQuest />
+					<DailyBounties />
+					<ExploreRealms />
+					<TrophyCabinet />
+				</ScrollView>
+			)}
 		</View>
 	);
 }
@@ -43,20 +72,13 @@ const styles = StyleSheet.create({
 		borderRadius: width * 0.4,
 	},
 	glowTop: {
-		backgroundColor: "#10b9812a", // Emerald glow
-		top: "-15%",
+		backgroundColor: "#10b9811a", // Emerald glow
+		top: "-10%",
 		left: "-20%",
 	},
 	glowBottom: {
-		backgroundColor: "#a855f72a", // Purple glow
+		backgroundColor: "#a855f71a", // Purple glow
 		bottom: "-10%",
 		right: "-30%",
-	},
-	cardShadow: {
-		shadowColor: "#1e293b",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.2,
-		shadowRadius: 10,
-		elevation: 5,
 	},
 });

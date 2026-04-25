@@ -2,6 +2,21 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { users } from '../db/schema';
 
+export async function getUserProfile(clerkId: string) {
+  try {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.clerkId, clerkId))
+      .limit(1);
+    
+    return result[0] || null;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+}
+
 export async function syncUserToDatabase(clerkUser: any) {
   try {
     if (!clerkUser) return;
@@ -23,7 +38,14 @@ export async function syncUserToDatabase(clerkUser: any) {
       .where(eq(users.clerkId, clerkId));
 
     if (existingUsers.length > 0) {
-      console.log('User already exists in the database. No action taken.');
+      // Update existing user if name or image changed
+      const existingUser = existingUsers[0];
+      if (existingUser.name !== name || existingUser.image_url !== imageUrl) {
+        await db.update(users)
+          .set({ name, image_url: imageUrl })
+          .where(eq(users.clerkId, clerkId));
+        console.log('Updated user profile data in database.');
+      }
       return;
     }
 
@@ -33,6 +55,10 @@ export async function syncUserToDatabase(clerkUser: any) {
       email,
       name,
       image_url: imageUrl,
+      xp: 0,
+      coins: 0,
+      level: 1,
+      title: 'Nomad',
     });
 
     console.log('Successfully synchronized new user to database.');
