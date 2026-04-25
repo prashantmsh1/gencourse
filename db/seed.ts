@@ -4,7 +4,7 @@ require('dotenv').config();
 
 import { eq } from 'drizzle-orm';
 import { db } from './index';
-import { levels, courses } from './schema';
+import { levels, courses, trophies } from './schema';
 
 const initialLevels = [
   { level: 1, title: 'Nomad', xpRequired: 0, coinsRequired: 0, icon: 'tent' },
@@ -46,6 +46,39 @@ const initialCourses = [
   },
 ];
 
+const initialTrophies = [
+  { 
+    title: '7-Day Streak', 
+    description: 'Login for 7 consecutive days.', 
+    requirement: 'Login 7 Days', 
+    icon: 'fire' 
+  },
+  { 
+    title: 'Night Owl', 
+    description: 'Complete a quest after midnight.', 
+    requirement: 'Midnight Quest', 
+    icon: 'star' 
+  },
+  { 
+    title: 'Perfect Score', 
+    description: 'Get 100% on your first quiz.', 
+    requirement: '100% Quiz', 
+    icon: 'medal' 
+  },
+  { 
+    title: 'Scholar', 
+    description: 'Complete 5 courses.', 
+    requirement: '5 Courses', 
+    icon: 'trophy' 
+  },
+  { 
+    title: 'Rich Nomad', 
+    description: 'Earn 1000 coins.', 
+    requirement: '1000 Coins', 
+    icon: 'gem' 
+  },
+];
+
 async function seed() {
   try {
     console.log('Seeding levels...');
@@ -72,6 +105,15 @@ async function seed() {
       }
     }
     console.log('Successfully seeded courses!');
+ 
+    console.log('Seeding trophies...');
+    for (const t of initialTrophies) {
+      const existing = await db.select().from(trophies).where(eq(trophies.title, t.title)).limit(1);
+      if (existing.length === 0) {
+        await db.insert(trophies).values(t);
+      }
+    }
+    console.log('Successfully seeded trophies!');
 
   } catch (error) {
     console.error('Error seeding database:', error);

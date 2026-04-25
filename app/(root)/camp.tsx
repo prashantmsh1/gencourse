@@ -13,7 +13,7 @@ import { useUserProfile } from "../../hooks/useUserProfile";
 const { width } = Dimensions.get("window");
 
 export default function Camp() {
-	const { profile, levels, activeQuest, bounties, loading, bountiesLoading, completeBounty } = useUserProfile();
+	const { profile, levels, activeQuest, bounties, allTrophies, userTrophies, loading, bountiesLoading, completeBounty } = useUserProfile();
 
 	return (
 		<View className="flex-1 bg-[#0b0c15] relative overflow-hidden">
@@ -57,7 +57,7 @@ export default function Camp() {
 					<ActiveQuest questData={activeQuest} />
 					<DailyBounties bounties={bounties} onCompleteBounty={completeBounty} isLoading={bountiesLoading} />
 					<ExploreRealms />
-					<TrophyCabinet />
+					<TrophyCabinet allTrophies={allTrophies} userTrophies={userTrophies} />
 				</ScrollView>
 			)}
 		</View>

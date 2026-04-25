@@ -1,25 +1,31 @@
 import { StatusBar } from "expo-status-bar";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, View, ScrollView } from "react-native";
+import QuestHeader from "../../components/quests/QuestHeader";
+import ForgeCard from "../../components/quests/ForgeCard";
+import ActiveMissions from "../../components/quests/ActiveMissions";
+import HiddenGems from "../../components/quests/HiddenGems";
 
 const { width } = Dimensions.get("window");
 
 export default function Quests() {
 	return (
-		<View className="flex-1 bg-main items-center justify-center relative overflow-hidden">
+		<View className="flex-1 bg-[#0b0c15] relative overflow-hidden">
 			<StatusBar style="light" />
 
 			{/* Atmospherics (Glows) */}
 			<View style={[styles.glow, styles.glowTop]} />
 			<View style={[styles.glow, styles.glowBottom]} />
 
-			<View className="z-10 items-center justify-center px-6 w-full flex-1">
-				<Text className="text-[32px] font-black tracking-widest text-text-primary text-center mb-2">
-					QUESTS
-				</Text>
-				<Text className="text-base text-text-secondary font-normal text-center mb-12">
-					Your active missions will appear here.
-				</Text>
-			</View>
+			<ScrollView 
+				className="flex-1 z-10" 
+				contentContainerStyle={{ padding: 24, paddingBottom: 100, paddingTop: 60 }}
+				showsVerticalScrollIndicator={false}
+			>
+				<QuestHeader />
+				<ForgeCard />
+				<ActiveMissions missions={[]} />
+				<HiddenGems />
+			</ScrollView>
 		</View>
 	);
 }

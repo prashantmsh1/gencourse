@@ -57,3 +57,19 @@ export const dailyBounties = pgTable("daily_bounties", {
 	expiresAt: timestamp("expires_at").notNull(),
 	courseId: integer("course_id"), // Optional FK to course
 });
+
+export const trophies = pgTable("trophies", {
+	id: serial("id").primaryKey(),
+	title: text("title").notNull(),
+	description: text("description").notNull(),
+	requirement: text("requirement").notNull(), // e.g. "Reach Level 10"
+	icon: text("icon").notNull(), // filename/key for the icon
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const userTrophies = pgTable("user_trophies", {
+	id: serial("id").primaryKey(),
+	userId: integer("user_id").notNull(),
+	trophyId: integer("trophy_id").notNull(),
+	earnedAt: timestamp("earned_at").defaultNow().notNull(),
+});

@@ -14,15 +14,33 @@ export default function RootLayout() {
 			screenOptions={{
 				headerShown: false,
 				tabBarStyle: {
-					backgroundColor: "#030712", // dark bg
-					borderTopWidth: 1,
+					backgroundColor: "#111827", // Surface Low
+					position: "absolute",
+					bottom: 24,
+					left: 20,
+					right: 20,
+					borderRadius: 32,
+					height: 75, // Taller to accommodate labels
+					paddingBottom: 14,
+					paddingTop: 10,
+					borderWidth: 1,
+					borderColor: "#1e293b",
+					borderTopWidth: 1, // Explicitly set for all edges
 					borderTopColor: "#1e293b",
-					height: 60,
-					paddingBottom: 8,
-					paddingTop: 8,
+					elevation: 12,
+					shadowColor: "#000",
+					shadowOffset: { width: 0, height: 10 },
+					shadowOpacity: 0.4,
+					shadowRadius: 20,
 				},
-				tabBarActiveTintColor: "#a855f7", // purple
-				tabBarInactiveTintColor: "#64748b", // slate
+				tabBarActiveTintColor: "#a855f7", // Primary Purple
+				tabBarInactiveTintColor: "#94a3b8", // Text Secondary
+				tabBarLabelStyle: {
+					fontSize: 12,
+					fontWeight: "700",
+					marginTop: -2,
+				},
+				tabBarHideOnKeyboard: true,
 			}}>
 			<Tabs.Screen
 				name="camp"
