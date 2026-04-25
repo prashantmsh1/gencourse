@@ -44,3 +44,16 @@ export const enrollments = pgTable("enrollments", {
 	enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const dailyBounties = pgTable("daily_bounties", {
+	id: serial("id").primaryKey(),
+	userId: integer("user_id").notNull(),
+	title: text("title").notNull(),
+	description: text("description").notNull(),
+	rewardType: text("reward_type").notNull(), // 'xp', 'coins', 'gems'
+	rewardAmount: integer("reward_amount").notNull(),
+	completed: integer("completed").default(0).notNull(), // 0 for false, 1 for true
+	generatedAt: timestamp("generated_at").defaultNow().notNull(),
+	expiresAt: timestamp("expires_at").notNull(),
+	courseId: integer("course_id"), // Optional FK to course
+});
